@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DTC Newsletter Advertising ROI Calculator</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <h1 class="hero-title">DTC Newsletter Advertising ROI Calculator</h1>
+            <p class="hero-subtitle">See your projected return on investment in real-time</p>
+        </div>
+    </section>
+
+    <!-- Main Calculator Section -->
+    <section class="calculator-section">
+        <div class="container">
+            <div class="calculator-grid">
+
+                <!-- Input Panel -->
+                <div class="panel input-panel">
+                    <h2 class="panel-title">Your Business Metrics</h2>
+
+                    <div class="input-group">
+                        <label for="aov">
+                            <span class="label-text">Average Order Value (AOV)</span>
+                            <span class="label-value" id="aov-value">$85</span>
+                        </label>
+                        <input type="range" id="aov" min="20" max="500" value="85" step="5">
+                        <div class="slider-range">
+                            <span>$20</span>
+                            <span>$500</span>
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="ltv">
+                            <span class="label-text">Customer Lifetime Value (LTV)</span>
+                            <span class="label-value" id="ltv-value">$340</span>
+                        </label>
+                        <input type="range" id="ltv" min="50" max="1000" value="340" step="10">
+                        <div class="slider-range">
+                            <span>$50</span>
+                            <span>$1,000</span>
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="cac">
+                            <span class="label-text">Current CAC</span>
+                            <span class="label-value" id="cac-value">$65</span>
+                        </label>
+                        <input type="range" id="cac" min="20" max="200" value="65" step="5">
+                        <div class="slider-range">
+                            <span>$20</span>
+                            <span>$200</span>
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="budget">
+                            <span class="label-text">Monthly Ad Budget</span>
+                            <span class="label-value" id="budget-value">$40,000</span>
+                        </label>
+                        <input type="range" id="budget" min="10000" max="100000" value="40000" step="1000">
+                        <div class="slider-range">
+                            <span>$10k</span>
+                            <span>$100k</span>
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="conversion">
+                            <span class="label-text">Current Conversion Rate</span>
+                            <span class="label-value" id="conversion-value">2.5%</span>
+                        </label>
+                        <input type="range" id="conversion" min="0.5" max="5" value="2.5" step="0.1">
+                        <div class="slider-range">
+                            <span>0.5%</span>
+                            <span>5%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Results Panel -->
+                <div class="panel results-panel">
+                    <h2 class="panel-title">DTC Newsletter Campaign Projection</h2>
+
+                    <div class="results-grid">
+                        <div class="result-item">
+                            <span class="result-label">Campaign Cost</span>
+                            <span class="result-value">$15,000</span>
+                        </div>
+
+                        <div class="result-item">
+                            <span class="result-label">Estimated Reach</span>
+                            <span class="result-value">150,000 opens</span>
+                        </div>
+
+                        <div class="result-item">
+                            <span class="result-label">Expected CTR</span>
+                            <span class="result-value">3.2%</span>
+                        </div>
+
+                        <div class="result-item">
+                            <span class="result-label">Landing Page Visits</span>
+                            <span class="result-value" id="visits">4,800</span>
+                        </div>
+
+                        <div class="result-item highlight">
+                            <span class="result-label">New Customers Acquired</span>
+                            <span class="result-value" id="customers">120</span>
+                        </div>
+
+                        <div class="result-item">
+                            <span class="result-label">Campaign CAC</span>
+                            <span class="result-value" id="campaign-cac">$125</span>
+                        </div>
+
+                        <div class="result-item">
+                            <span class="result-label">First-Order Revenue</span>
+                            <span class="result-value" id="first-order-revenue">$10,200</span>
+                        </div>
+
+                        <div class="result-item highlight">
+                            <span class="result-label">12-Month LTV Revenue</span>
+                            <span class="result-value" id="ltv-revenue">$40,800</span>
+                        </div>
+
+                        <div class="result-item roi-highlight">
+                            <span class="result-label">Campaign ROI</span>
+                            <span class="result-value" id="roi-percentage">172%</span>
+                        </div>
+
+                        <div class="result-item roi-highlight">
+                            <span class="result-label">ROI Multiple</span>
+                            <span class="result-value" id="roi-multiple">2.7x</span>
+                        </div>
+
+                        <div class="result-item">
+                            <span class="result-label">Breakeven Timeline</span>
+                            <span class="result-value" id="breakeven">4 months</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Comparison Chart Section -->
+    <section class="chart-section">
+        <div class="container">
+            <h2 class="section-title">How DTC Newsletter Stacks Up Against Other Channels</h2>
+            <div class="chart-container">
+                <canvas id="comparisonChart"></canvas>
+            </div>
+        </div>
+    </section>
+
+    <!-- Objection Handling Section -->
+    <section class="objections-section">
+        <div class="container">
+            <h2 class="section-title">Common Questions Answered</h2>
+            <div class="objections-grid">
+
+                <!-- Card 1: Lower Conversion -->
+                <div class="objection-card">
+                    <h3 class="card-title">What if conversion is lower?</h3>
+                    <div class="card-content">
+                        <p class="breakeven-stat">Breakeven conversion rate: <strong id="breakeven-conversion">1.3%</strong></p>
+                        <p class="card-text">You'd need just <span id="breakeven-conversion-text">1.3%</span> conversion to break even (vs your current <span id="current-conversion-text">2.5%</span>)</p>
+                        <div class="confidence-bar">
+                            <div class="confidence-fill" id="confidence-fill"></div>
+                        </div>
+                        <p class="confidence-text">You have a <span id="confidence-margin">92%</span> margin of safety</p>
+                    </div>
+                </div>
+
+                <!-- Card 2: Attribution -->
+                <div class="objection-card">
+                    <h3 class="card-title">How do we track attribution?</h3>
+                    <div class="card-content">
+                        <ul class="tracking-list">
+                            <li><strong>UTM Codes:</strong> Track every click back to the newsletter</li>
+                            <li><strong>Unique Promo Codes:</strong> Newsletter-exclusive discount codes</li>
+                            <li><strong>Post-Campaign Survey:</strong> Measure brand lift and awareness</li>
+                            <li><strong>Pixel Tracking:</strong> Retarget engaged readers</li>
+                        </ul>
+                        <p class="card-note">Multi-touch attribution ensures accurate ROI measurement</p>
+                    </div>
+                </div>
+
+                <!-- Card 3: Test Smaller -->
+                <div class="objection-card">
+                    <h3 class="card-title">Can we test smaller first?</h3>
+                    <div class="card-content">
+                        <div class="test-option">
+                            <p class="test-label">Classified Ad Option</p>
+                            <p class="test-price">$3,000</p>
+                            <div class="test-results">
+                                <div class="test-stat">
+                                    <span class="stat-label">Expected Customers</span>
+                                    <span class="stat-value" id="test-customers">24</span>
+                                </div>
+                                <div class="test-stat">
+                                    <span class="stat-label">Projected ROI</span>
+                                    <span class="stat-value" id="test-roi">172%</span>
+                                </div>
+                                <div class="test-stat">
+                                    <span class="stat-label">ROI Multiple</span>
+                                    <span class="stat-value" id="test-multiple">2.7x</span>
+                                </div>
+                            </div>
+                            <p class="test-note">Same great ROI, lower risk entry point</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta-section">
+        <div class="container">
+            <div class="cta-content">
+                <h2 class="cta-title">Ready to see these results for your brand?</h2>
+                <p class="cta-subtitle">Schedule a call with our team to discuss your DTC Newsletter campaign</p>
+                <button class="cta-button">Schedule a Call</button>
+                <p class="cta-note">No commitment required • Free strategy session</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <p>DTC Newsletter ROI Calculator • Built for modern DTC brands</p>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
