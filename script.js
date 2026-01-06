@@ -4,13 +4,14 @@
 
 let comparisonChart = null;
 
-// Campaign constants
+// Campaign constants (never change)
 const CAMPAIGN_COST = 15000;
 const REACH = 150000;
-const CTR = 0.032;
-const VISITS = REACH * CTR; // 4,800
+const EXPECTED_CTR = 0.032; // 3.2%
+const VISITS = REACH * EXPECTED_CTR; // 4,800
 
 const TEST_CAMPAIGN_COST = 3000;
+const TEST_REACH = 30000; // Classified ad reach
 
 // ===========================
 // Initialize on Page Load
@@ -77,37 +78,55 @@ function updateValueDisplay(inputName, value) {
 
 function calculateROI() {
     // Get input values
-    const aov = parseFloat(document.getElementById('aov').value);
-    const ltv = parseFloat(document.getElementById('ltv').value);
-    const conversionRate = parseFloat(document.getElementById('conversion').value);
+    const userAOV = parseFloat(document.getElementById('aov').value);
+    const userLTV = parseFloat(document.getElementById('ltv').value);
+    const userCAC = parseFloat(document.getElementById('cac').value);
+    const userConversionRate = parseFloat(document.getElementById('conversion').value);
 
-    // Calculate metrics
-    const customers = VISITS * (conversionRate / 100);
+    // STEP-BY-STEP CALCULATIONS (exact formulas)
+    // 1. visits = already calculated as VISITS constant (4800)
+
+    // 2. customers = visits * (userConversionRate / 100)
+    const customers = VISITS * (userConversionRate / 100);
+
+    // 3. campaign_cac = CAMPAIGN_COST / customers
     const campaignCAC = CAMPAIGN_COST / customers;
-    const firstOrderRevenue = customers * aov;
-    const ltvRevenue = customers * ltv;
-    const roiPercentage = ((ltvRevenue - CAMPAIGN_COST) / CAMPAIGN_COST) * 100;
+
+    // 4. first_order_revenue = customers * userAOV
+    const firstOrderRevenue = customers * userAOV;
+
+    // 5. ltv_revenue = customers * userLTV
+    const ltvRevenue = customers * userLTV;
+
+    // 6. immediate_profit = first_order_revenue - CAMPAIGN_COST
+    const immediateProfit = firstOrderRevenue - CAMPAIGN_COST;
+
+    // 7. twelve_month_profit = ltv_revenue - CAMPAIGN_COST
+    const twelveMonthProfit = ltvRevenue - CAMPAIGN_COST;
+
+    // 8. roi_percentage = (twelve_month_profit / CAMPAIGN_COST) * 100
+    const roiPercentage = (twelveMonthProfit / CAMPAIGN_COST) * 100;
+
+    // 9. roi_multiple = ltv_revenue / CAMPAIGN_COST
     const roiMultiple = ltvRevenue / CAMPAIGN_COST;
 
-    // Calculate breakeven timeline (assuming customers repurchase based on LTV/AOV ratio)
-    const purchasesPerYear = ltv / aov;
-    const monthlyRevenue = (ltvRevenue - firstOrderRevenue) / 12;
-    const remainingCost = CAMPAIGN_COST - firstOrderRevenue;
-    const breakevenMonths = remainingCost > 0 ? Math.ceil(remainingCost / monthlyRevenue) : 0;
+    // 10. breakeven_conversion = (CAMPAIGN_COST / userLTV / VISITS) * 100
+    const breakevenConversion = (CAMPAIGN_COST / userLTV / VISITS) * 100;
 
     // Update DOM
     updateResults({
         customers: Math.round(customers),
         campaignCAC: campaignCAC,
+        userCAC: userCAC,
         firstOrderRevenue: firstOrderRevenue,
         ltvRevenue: ltvRevenue,
+        immediateProfit: immediateProfit,
         roiPercentage: roiPercentage,
-        roiMultiple: roiMultiple,
-        breakevenMonths: breakevenMonths
+        roiMultiple: roiMultiple
     });
 
     // Update objections section
-    updateObjections(conversionRate, aov, ltv);
+    updateObjections(userConversionRate, userAOV, userLTV, breakevenConversion);
 
     // Update chart
     updateChart(campaignCAC, roiMultiple);
@@ -118,42 +137,54 @@ function calculateROI() {
 // ===========================
 
 function updateResults(metrics) {
+    // Update all result fields
     document.getElementById('customers').textContent = metrics.customers.toLocaleString();
     document.getElementById('campaign-cac').textContent = `$${Math.round(metrics.campaignCAC).toLocaleString()}`;
+    document.getElementById('cac-comparison').textContent = `$${Math.round(metrics.userCAC).toLocaleString()}`;
     document.getElementById('first-order-revenue').textContent = `$${Math.round(metrics.firstOrderRevenue).toLocaleString()}`;
+
+    // Immediate ROI calculation and display
+    const immediateROIPercentage = (metrics.immediateProfit / CAMPAIGN_COST) * 100;
+    const immediateROIElement = document.getElementById('immediate-roi');
+    immediateROIElement.textContent = `${Math.round(immediateROIPercentage)}%`;
+
+    // Style negative immediate ROI in gray
+    const immediateROIParent = immediateROIElement.closest('.result-item');
+    if (immediateROIPercentage < 0) {
+        immediateROIParent.style.color = '#6B7280';
+    } else {
+        immediateROIParent.style.color = '';
+    }
+
     document.getElementById('ltv-revenue').textContent = `$${Math.round(metrics.ltvRevenue).toLocaleString()}`;
     document.getElementById('roi-percentage').textContent = `${Math.round(metrics.roiPercentage)}%`;
     document.getElementById('roi-multiple').textContent = `${metrics.roiMultiple.toFixed(1)}x`;
-
-    // Breakeven timeline
-    const breakevenText = metrics.breakevenMonths === 0
-        ? 'Immediate'
-        : `${metrics.breakevenMonths} ${metrics.breakevenMonths === 1 ? 'month' : 'months'}`;
-    document.getElementById('breakeven').textContent = breakevenText;
 }
 
 // ===========================
 // Update Objections Section
 // ===========================
 
-function updateObjections(currentConversion, aov, ltv) {
+function updateObjections(currentConversion, aov, ltv, breakevenConversion) {
     // Card 1: Breakeven conversion rate
-    const breakevenConversion = (CAMPAIGN_COST / (VISITS * ltv)) * 100;
-    const confidenceMargin = ((currentConversion - breakevenConversion) / currentConversion) * 100;
+    // breakevenConversion is already calculated in calculateROI
+    const safetyMargin = ((currentConversion - breakevenConversion) / currentConversion) * 100;
 
-    document.getElementById('breakeven-conversion').textContent = `${breakevenConversion.toFixed(1)}%`;
-    document.getElementById('breakeven-conversion-text').textContent = `${breakevenConversion.toFixed(1)}%`;
+    document.getElementById('breakeven-conversion').textContent = `${breakevenConversion.toFixed(2)}%`;
+    document.getElementById('breakeven-conversion-text').textContent = `${breakevenConversion.toFixed(2)}%`;
     document.getElementById('current-conversion-text').textContent = `${currentConversion.toFixed(1)}%`;
-    document.getElementById('confidence-margin').textContent = `${Math.round(confidenceMargin)}%`;
+    document.getElementById('confidence-margin').textContent = `${Math.round(safetyMargin)}%`;
 
     // Update confidence bar
     const confidenceFill = document.getElementById('confidence-fill');
-    confidenceFill.style.width = `${Math.min(confidenceMargin, 100)}%`;
+    confidenceFill.style.width = `${Math.min(safetyMargin, 100)}%`;
 
-    // Card 3: Test campaign metrics
-    const testCustomers = (REACH * 0.2) * CTR * (currentConversion / 100); // 20% of reach for classified ad
+    // Card 3: Test campaign metrics ($3k classified ad)
+    const testVisits = TEST_REACH * EXPECTED_CTR; // 30,000 * 0.032 = 960
+    const testCustomers = testVisits * (currentConversion / 100);
     const testLtvRevenue = testCustomers * ltv;
-    const testRoiPercentage = ((testLtvRevenue - TEST_CAMPAIGN_COST) / TEST_CAMPAIGN_COST) * 100;
+    const testTwelveMonthProfit = testLtvRevenue - TEST_CAMPAIGN_COST;
+    const testRoiPercentage = (testTwelveMonthProfit / TEST_CAMPAIGN_COST) * 100;
     const testRoiMultiple = testLtvRevenue / TEST_CAMPAIGN_COST;
 
     document.getElementById('test-customers').textContent = Math.round(testCustomers);
@@ -183,16 +214,16 @@ function initializeChart() {
                     label: 'CAC ($)',
                     data: initialData.cacs,
                     backgroundColor: [
-                        'rgba(66, 103, 178, 0.8)',
-                        'rgba(234, 67, 53, 0.8)',
-                        'rgba(251, 188, 5, 0.8)',
-                        'rgba(255, 107, 53, 0.8)'
+                        'rgba(156, 163, 175, 0.7)',  // Gray for Meta
+                        'rgba(156, 163, 175, 0.7)',  // Gray for Google
+                        'rgba(156, 163, 175, 0.7)',  // Gray for Influencer
+                        'rgba(37, 99, 235, 0.8)'     // Blue for DTC Newsletter
                     ],
                     borderColor: [
-                        'rgba(66, 103, 178, 1)',
-                        'rgba(234, 67, 53, 1)',
-                        'rgba(251, 188, 5, 1)',
-                        'rgba(255, 107, 53, 1)'
+                        'rgba(107, 114, 128, 1)',    // Gray border for Meta
+                        'rgba(107, 114, 128, 1)',    // Gray border for Google
+                        'rgba(107, 114, 128, 1)',    // Gray border for Influencer
+                        'rgba(37, 99, 235, 1)'       // Blue border for DTC Newsletter
                     ],
                     borderWidth: 2,
                     borderRadius: 8,
@@ -202,16 +233,16 @@ function initializeChart() {
                     label: 'ROI Multiple (x)',
                     data: initialData.rois,
                     backgroundColor: [
-                        'rgba(26, 26, 46, 0.8)',
-                        'rgba(26, 26, 46, 0.8)',
-                        'rgba(26, 26, 46, 0.8)',
-                        'rgba(255, 107, 53, 0.8)'
+                        'rgba(156, 163, 175, 0.7)',  // Gray for Meta
+                        'rgba(156, 163, 175, 0.7)',  // Gray for Google
+                        'rgba(156, 163, 175, 0.7)',  // Gray for Influencer
+                        'rgba(37, 99, 235, 0.8)'     // Blue for DTC Newsletter
                     ],
                     borderColor: [
-                        'rgba(26, 26, 46, 1)',
-                        'rgba(26, 26, 46, 1)',
-                        'rgba(26, 26, 46, 1)',
-                        'rgba(255, 107, 53, 1)'
+                        'rgba(107, 114, 128, 1)',    // Gray border for Meta
+                        'rgba(107, 114, 128, 1)',    // Gray border for Google
+                        'rgba(107, 114, 128, 1)',    // Gray border for Influencer
+                        'rgba(37, 99, 235, 1)'       // Blue border for DTC Newsletter
                     ],
                     borderWidth: 2,
                     borderRadius: 8,
@@ -245,7 +276,7 @@ function initializeChart() {
                     }
                 },
                 tooltip: {
-                    backgroundColor: 'rgba(26, 26, 46, 0.95)',
+                    backgroundColor: 'rgba(31, 41, 55, 0.95)',
                     titleFont: {
                         size: 14,
                         weight: '600',
@@ -287,7 +318,7 @@ function initializeChart() {
                             weight: '600',
                             family: 'Inter'
                         },
-                        color: '#1a1a2e'
+                        color: '#1F2937'
                     },
                     grid: {
                         color: 'rgba(0, 0, 0, 0.05)'
@@ -314,7 +345,7 @@ function initializeChart() {
                             weight: '600',
                             family: 'Inter'
                         },
-                        color: '#1a1a2e'
+                        color: '#1F2937'
                     },
                     grid: {
                         drawOnChartArea: false
